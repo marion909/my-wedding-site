@@ -209,7 +209,7 @@ export default function DashboardPage() {
                           } else {
                             alert('Fehler beim Veröffentlichen')
                           }
-                        } catch (error) {
+                        } catch (_error) {
                           alert('Ein Fehler ist aufgetreten')
                         }
                       }}
@@ -238,7 +238,7 @@ export default function DashboardPage() {
                             } else {
                               alert('Fehler beim Zurücksetzen')
                             }
-                          } catch (error) {
+                          } catch (_error) {
                             alert('Ein Fehler ist aufgetreten')
                           }
                         }

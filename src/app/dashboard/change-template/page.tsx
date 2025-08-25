@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -183,10 +184,11 @@ export default function TemplateChangePage() {
               {/* Template Preview */}
               <div className="aspect-video bg-gray-100 relative">
                 {template.previewImage ? (
-                  <img
+                  <Image
                     src={template.previewImage}
                     alt={template.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

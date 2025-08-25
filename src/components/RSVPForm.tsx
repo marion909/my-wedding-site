@@ -63,7 +63,7 @@ export default function RSVPForm({ weddingId, weddingDate }: RSVPFormProps) {
       } else {
         setError(data.error || 'Ein Fehler ist aufgetreten')
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Ein Fehler ist aufgetreten')
     } finally {
       setLoading(false)

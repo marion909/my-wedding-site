@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 interface AnalyticsEvent {
   type: 'page_view' | 'wedding_created' | 'rsvp_submitted' | 'photo_uploaded' | 'template_changed'
   weddingId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export async function trackEvent(event: AnalyticsEvent) {

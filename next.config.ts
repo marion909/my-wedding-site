@@ -12,8 +12,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@hello-pangea/dnd'],
   },
-  // Improve build performance
-  swcMinify: true,
+  // Remove deprecated swcMinify option (enabled by default in Next.js 15)
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

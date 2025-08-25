@@ -1,12 +1,19 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
 import RSVPForm from '@/components/RSVPForm'
 import PhotoGallery from '@/components/PhotoGallery'
 import { generateWeddingSEO } from '@/lib/seo'
 import { shouldShowAds } from '@/lib/subscription'
 import { WeddingHeaderAd, WeddingFooterAd, WeddingSectionAd } from '@/components/SmartAd'
 import { Metadata } from 'next'
+
+interface SectionConfig {
+  id: string
+  name: string
+  description: string
+  enabled: boolean
+  required: boolean
+}
 
 interface WeddingPageProps {
   params: Promise<{
@@ -32,7 +39,7 @@ export async function generateMetadata({ params }: WeddingPageProps): Promise<Me
     }
   }
 
-  const weddingDate = new Date(wedding.date || (wedding as any).weddingDate)
+  const weddingDate = new Date(wedding.weddingDate)
   
   return generateWeddingSEO({
     brideName: wedding.brideName,
@@ -64,15 +71,14 @@ export default async function WeddingPage({ params }: WeddingPageProps) {
   // Debug: log the wedding data structure
   console.log('Wedding data:', {
     id: wedding.id,
-    date: wedding.date,
-    weddingDate: (wedding as any).weddingDate
+    weddingDate: wedding.weddingDate
   })
 
-  const weddingDate = new Date(wedding.date || (wedding as any).weddingDate)
+  const weddingDate = new Date(wedding.weddingDate)
   
   // Check if the date is valid
   if (isNaN(weddingDate.getTime())) {
-    console.error('Invalid wedding date:', wedding.date || (wedding as any).weddingDate)
+    console.error('Invalid wedding date:', wedding.weddingDate)
     notFound()
   }
   
@@ -114,13 +120,13 @@ export default async function WeddingPage({ params }: WeddingPageProps) {
 
   // Helper function to check if a section is enabled
   const isSectionEnabled = (sectionId: string) => {
-    const section = sectionConfig.find((s: any) => s.id === sectionId)
+    const section = sectionConfig.find((s: SectionConfig) => s.id === sectionId)
     return section ? section.enabled : true // Default to enabled if not found
   }
 
   // Get sections in the configured order
   const getSectionsInOrder = () => {
-    return sectionConfig.filter((s: any) => s.enabled)
+    return sectionConfig.filter((s: SectionConfig) => s.enabled)
   }
 
   // Render individual sections
@@ -264,7 +270,11 @@ export default async function WeddingPage({ params }: WeddingPageProps) {
               <h2 className="section-title text-3xl font-bold text-center mb-12">
                 Unsere Fotos
               </h2>
-              <PhotoGallery photos={wedding.photos} />
+              <PhotoGallery photos={wedding.photos.map(photo => ({
+                ...photo,
+                url: `/uploads/${photo.filename}`,
+                caption: photo.caption || ''
+              }))} />
             </div>
           </section>
         )
@@ -352,7 +362,7 @@ export default async function WeddingPage({ params }: WeddingPageProps) {
       </nav>
 
       {/* Render sections in configured order */}
-      {getSectionsInOrder().map((section: any, index: number) => (
+      {getSectionsInOrder().map((section: SectionConfig, index: number) => (
         <div key={section.id}>
           {renderSection(section.id)}
           {/* Show ads between sections for free users */}

@@ -67,9 +67,9 @@ export default async function RSVPPage({
   
   const stats = {
     total: rsvps.length,
-    attending: rsvps.filter((r: any) => r.attending).length,
-    notAttending: rsvps.filter((r: any) => !r.attending).length,
-    totalGuests: rsvps.filter((r: any) => r.attending).reduce((sum: number, r: any) => sum + r.guestCount, 0)
+    attending: rsvps.filter((r) => r.attending).length,
+    notAttending: rsvps.filter((r) => !r.attending).length,
+    totalGuests: rsvps.filter((r) => r.attending).reduce((sum: number, r) => sum + r.guestCount, 0)
   }
 
   return (
@@ -108,7 +108,7 @@ export default async function RSVPPage({
               }}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
             >
-              {weddings.map((wedding: any) => (
+              {weddings.map((wedding) => (
                 <option key={wedding.id} value={wedding.id}>
                   {wedding.brideName} & {wedding.groomName}
                 </option>
@@ -182,7 +182,7 @@ export default async function RSVPPage({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {rsvps.map((rsvp: any) => (
+                      {rsvps.map((rsvp) => (
                         <tr key={rsvp.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">

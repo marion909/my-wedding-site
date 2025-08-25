@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 
 interface Photo {
@@ -24,7 +24,7 @@ export default function PhotoGallery({ weddingId, photos: initialPhotos, editabl
   const [error, setError] = useState('')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
 
-  const loadPhotos = async () => {
+  const loadPhotos = useCallback(async () => {
     if (!weddingId || initialPhotos) return
     
     try {
@@ -47,7 +47,7 @@ export default function PhotoGallery({ weddingId, photos: initialPhotos, editabl
     } finally {
       setLoading(false)
     }
-  }
+  }, [weddingId, initialPhotos, maxPhotos])
 
   const deletePhoto = async (photoId: string) => {
     if (!confirm('Möchtest du dieses Foto wirklich löschen?')) return
@@ -73,7 +73,7 @@ export default function PhotoGallery({ weddingId, photos: initialPhotos, editabl
     if (!initialPhotos) {
       loadPhotos()
     }
-  }, [weddingId, initialPhotos])
+  }, [initialPhotos, loadPhotos])
 
   if (loading) {
     return (

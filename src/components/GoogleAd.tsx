@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react'
 // Extend Window interface for Google Ads
 declare global {
   interface Window {
-    adsbygoogle: any[]
+    adsbygoogle: unknown[]
   }
 }
 

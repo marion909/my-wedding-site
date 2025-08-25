@@ -20,10 +20,10 @@ interface Wedding {
   groomName: string
   weddingDate: Date
   location: string
-  story?: string
-  time?: string
-  dresscode?: string
-  description?: string
+  story?: string | null
+  time?: string | null
+  dresscode?: string | null
+  description?: string | null
   templateId: string
   template: Template
   isPublished: boolean
@@ -109,7 +109,7 @@ export default function WeddingEditor({ wedding }: WeddingEditorProps) {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'content' | 'design' | 'layout' | 'settings')}
                 className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-purple-500 text-purple-600'

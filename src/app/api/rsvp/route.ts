@@ -181,9 +181,9 @@ export async function GET(request: NextRequest) {
 
     const stats = {
       total: rsvps.length,
-      attending: rsvps.filter((r: any) => r.attending).length,
-      notAttending: rsvps.filter((r: any) => !r.attending).length,
-      totalGuests: rsvps.filter((r: any) => r.attending).reduce((sum: number, r: any) => sum + r.guestCount, 0)
+      attending: rsvps.filter((r) => r.attending).length,
+      notAttending: rsvps.filter((r) => !r.attending).length,
+      totalGuests: rsvps.filter((r) => r.attending).reduce((sum: number, r) => sum + r.guestCount, 0)
     }
 
     return NextResponse.json({ rsvps, stats })

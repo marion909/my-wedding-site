@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
       orderBy: { sortOrder: 'asc' }
     })
 
-    const photosWithUrls = photos.map((photo: any) => ({
+    const photosWithUrls = photos.map((photo) => ({
       id: photo.id,
       filename: photo.filename,
       caption: photo.caption,
@@ -191,7 +191,7 @@ export async function DELETE(request: NextRequest) {
     try {
       const { unlink } = await import('fs/promises')
       await unlink(filePath)
-    } catch (fileError) {
+    } catch (_fileError) {
       console.warn('Could not delete file:', filePath)
     }
 

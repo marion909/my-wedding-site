@@ -135,12 +135,12 @@ export async function handleSubscriptionWebhook(event: Stripe.Event) {
 async function handleSuccessfulPayment(
   sessionOrInvoice: Stripe.Checkout.Session | Stripe.Invoice
 ) {
-  const customerId = sessionOrInvoice.customer as string
-  let subscriptionId: string | null = null
+  const _customerId = sessionOrInvoice.customer as string
+  let _subscriptionId: string | null = null
   
   // Handle different object types
   if ('subscription' in sessionOrInvoice && sessionOrInvoice.subscription) {
-    subscriptionId = sessionOrInvoice.subscription as string
+    _subscriptionId = sessionOrInvoice.subscription as string
   }
   
   // Get user ID from metadata or customer
@@ -167,12 +167,12 @@ async function handleSuccessfulPayment(
 }
 
 async function updateSubscriptionStatus(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
+  const _customerId = subscription.customer as string
   
   // Find user by customer ID and update subscription
   /*
   await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
+    where: { stripeCustomerId: _customerId },
     data: {
       subscriptionStatus: subscription.status,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
@@ -183,12 +183,12 @@ async function updateSubscriptionStatus(subscription: Stripe.Subscription) {
 }
 
 async function cancelSubscription(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
+  const _customerId = subscription.customer as string
   
   // Update user subscription to cancelled
   /*
   await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
+    where: { stripeCustomerId: _customerId },
     data: {
       subscriptionStatus: 'cancelled',
       cancelAtPeriodEnd: true,
