@@ -233,7 +233,18 @@ deploy_application() {
     # Clone repository
     if [ -d ".git" ]; then
         print_status "Updating existing repository..."
-        git pull origin main
+        
+        # Stash any local changes to prevent conflicts
+        if ! git diff --quiet; then
+            print_warning "Local changes detected, stashing them..."
+            git stash push -u -m "Auto-stash before deployment $(date)"
+        fi
+        
+        # Force update from origin
+        git fetch origin
+        git reset --hard origin/main
+        
+        print_status "Repository updated successfully"
     else
         print_status "Cloning repository..."
         git clone $GITHUB_REPO .
