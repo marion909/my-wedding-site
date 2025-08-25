@@ -1,0 +1,94 @@
+/* Rustikal Romantisch Template - Grün & Braun */
+
+.template-rustic-romantic {
+  --primary-color: #8fbc8f;
+  --secondary-color: #f5f5dc;
+  --accent-color: #8b4513;
+  --text-color: #2f4f2f;
+  --background: linear-gradient(135deg, #f5f5dc 0%, #ddd9c4 100%);
+}
+
+.template-rustic-romantic .hero-section {
+  background: var(--background);
+  position: relative;
+}
+
+.template-rustic-romantic .hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238fbc8f' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+}
+
+.template-rustic-romantic .hero-title {
+  color: var(--accent-color);
+  font-family: 'Brush Script MT', cursive;
+  text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.3);
+}
+
+.template-rustic-romantic .hero-subtitle {
+  color: var(--primary-color);
+  font-style: italic;
+}
+
+.template-rustic-romantic .section-title {
+  color: var(--accent-color);
+  font-family: 'Brush Script MT', cursive;
+  position: relative;
+}
+
+.template-rustic-romantic .section-title::after {
+  content: "🌿";
+  position: absolute;
+  right: -30px;
+  top: 0;
+}
+
+.template-rustic-romantic .card {
+  background: rgba(245, 245, 220, 0.9);
+  border: 2px solid var(--primary-color);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(143, 188, 143, 0.2);
+}
+
+.template-rustic-romantic .btn-primary {
+  background: var(--primary-color);
+  border: 2px solid var(--accent-color);
+  color: white;
+  border-radius: 25px;
+  font-weight: bold;
+}
+
+.template-rustic-romantic .btn-primary:hover {
+  background: var(--accent-color);
+  border-color: var(--primary-color);
+}
+
+.template-rustic-romantic .countdown {
+  background: rgba(143, 188, 143, 0.15);
+  border: 2px dashed var(--primary-color);
+  border-radius: 20px;
+}
+
+.template-rustic-romantic .photo-gallery img {
+  border-radius: 15px;
+  filter: sepia(10%) saturate(120%);
+}
+
+.template-rustic-romantic .rsvp-form {
+  background: rgba(245, 245, 220, 0.95);
+  border: 3px solid var(--primary-color);
+  border-radius: 20px;
+}
+
+.template-rustic-romantic .decorative-element::before {
+  content: "🌸 🍃 🌸";
+  display: block;
+  text-align: center;
+  margin: 15px 0;
+  font-size: 1.2rem;
+}

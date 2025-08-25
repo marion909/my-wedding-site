@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User Model
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Subscription fields
+  subscriptionStatus String @default("free") // "free", "premium", "cancelled"
+  subscriptionId     String? // Stripe subscription ID
+  currentPeriodEnd   DateTime? // When current billing period ends
+  cancelAtPeriodEnd  Boolean @default(false)
+
+  // Relations
+  wedding Wedding?
+
+  @@map("users")
+}
+
+// Wedding Model
+model Wedding {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  slug        String   @unique // URL slug like "anna-und-max"
+  brideName   String
+  groomName   String
+  weddingDate DateTime
+  location    String
+  time        String?  // Optional time field
+  dresscode   String?  // Optional dresscode field
+  story       String?
+  description String?  // Optional description field
+  templateId  String
+  isPublished Boolean  @default(false)
+  sectionConfig String? // JSON string for section order and visibility
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template Template @relation(fields: [templateId], references: [id])
+  photos   Photo[]
+  rsvps    RSVP[]
+
+  @@map("weddings")
+}
+
+// Template Model
+model Template {
+  id           String @id @default(cuid())
+  name         String @unique
+  description  String
+  previewImage String
+  cssFile      String // Path to CSS file
+
+  // Relations
+  weddings Wedding[]
+
+  @@map("templates")
+}
+
+// Photo Model
+model Photo {
+  id        String   @id @default(cuid())
+  weddingId String
+  filename  String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relations
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@map("photos")
+}
+
+// RSVP Model
+model RSVP {
+  id         String   @id @default(cuid())
+  weddingId  String
+  guestName  String
+  email      String
+  attending  Boolean
+  guestCount Int      @default(1)
+  message    String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@map("rsvps")
+}

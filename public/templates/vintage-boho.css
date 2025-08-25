@@ -1,0 +1,138 @@
+/* Vintage Boho Template - Rosa & Creme */
+
+.template-vintage-boho {
+  --primary-color: #d4a4a4;
+  --secondary-color: #faf7f2;
+  --accent-color: #b8860b;
+  --text-color: #5d4e37;
+  --background: linear-gradient(135deg, #faf7f2 0%, #f0ede6 100%);
+}
+
+.template-vintage-boho .hero-section {
+  background: var(--background);
+  position: relative;
+}
+
+.template-vintage-boho .hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4a4a4' fill-opacity='0.1'%3E%3Cpath d='M20 20c0 11.046-8.954 20-20 20v20h40V20c0-11.046-8.954-20-20-20z'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.2;
+}
+
+.template-vintage-boho .hero-title {
+  color: var(--primary-color);
+  font-family: 'Dancing Script', cursive;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(212, 164, 164, 0.3);
+}
+
+.template-vintage-boho .hero-subtitle {
+  color: var(--accent-color);
+  font-style: italic;
+  font-family: 'Dancing Script', cursive;
+}
+
+.template-vintage-boho .section-title {
+  color: var(--primary-color);
+  font-family: 'Dancing Script', cursive;
+  font-weight: 600;
+  position: relative;
+}
+
+.template-vintage-boho .section-title::before {
+  content: "✿";
+  position: absolute;
+  left: -40px;
+  color: var(--accent-color);
+}
+
+.template-vintage-boho .section-title::after {
+  content: "✿";
+  position: absolute;
+  right: -40px;
+  color: var(--accent-color);
+}
+
+.template-vintage-boho .card {
+  background: rgba(250, 247, 242, 0.9);
+  border: 2px solid var(--primary-color);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(212, 164, 164, 0.15);
+  position: relative;
+}
+
+.template-vintage-boho .card::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  border-radius: 25px;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+.template-vintage-boho .btn-primary {
+  background: linear-gradient(45deg, var(--primary-color), #e8b4b4);
+  border: none;
+  color: white;
+  border-radius: 30px;
+  padding: 12px 30px;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.template-vintage-boho .btn-primary:hover {
+  background: linear-gradient(45deg, #e8b4b4, var(--accent-color));
+  transform: scale(1.05);
+}
+
+.template-vintage-boho .countdown {
+  background: rgba(212, 164, 164, 0.1);
+  border: 3px double var(--primary-color);
+  border-radius: 25px;
+}
+
+.template-vintage-boho .photo-gallery img {
+  border: 5px solid white;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(212, 164, 164, 0.3);
+  filter: sepia(20%) saturate(110%);
+}
+
+.template-vintage-boho .rsvp-form {
+  background: rgba(250, 247, 242, 0.95);
+  border: 3px double var(--primary-color);
+  border-radius: 25px;
+}
+
+.template-vintage-boho .decorative-element::before {
+  content: "🌺 ✨ 🌸 ✨ 🌺";
+  display: block;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 1.3rem;
+}
+
+.template-vintage-boho input,
+.template-vintage-boho textarea,
+.template-vintage-boho select {
+  border-radius: 15px;
+  border: 2px solid var(--primary-color);
+  background: rgba(250, 247, 242, 0.8);
+}
+
+.template-vintage-boho input:focus,
+.template-vintage-boho textarea:focus,
+.template-vintage-boho select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(212, 164, 164, 0.3);
+}

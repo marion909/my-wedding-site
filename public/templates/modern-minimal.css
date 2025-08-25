@@ -1,0 +1,108 @@
+/* Modern Minimalistisch Template - Schwarz & Weiß */
+
+.template-modern-minimal {
+  --primary-color: #000000;
+  --secondary-color: #ffffff;
+  --accent-color: #666666;
+  --text-color: #333333;
+  --background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+}
+
+.template-modern-minimal .hero-section {
+  background: var(--background);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.template-modern-minimal .hero-title {
+  color: var(--primary-color);
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-weight: 100;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.template-modern-minimal .hero-subtitle {
+  color: var(--accent-color);
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: lowercase;
+}
+
+.template-modern-minimal .section-title {
+  color: var(--primary-color);
+  font-weight: 200;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 15px;
+}
+
+.template-modern-minimal .card {
+  background: var(--secondary-color);
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.template-modern-minimal .btn-primary {
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  color: white;
+  border-radius: 0;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.template-modern-minimal .btn-primary:hover {
+  background: transparent;
+  color: var(--primary-color);
+}
+
+.template-modern-minimal .countdown {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+}
+
+.template-modern-minimal .photo-gallery img {
+  border-radius: 0;
+  filter: grayscale(20%);
+  transition: filter 0.3s ease;
+}
+
+.template-modern-minimal .photo-gallery img:hover {
+  filter: grayscale(0%);
+}
+
+.template-modern-minimal .rsvp-form {
+  background: var(--secondary-color);
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+}
+
+.template-modern-minimal .decorative-element::before {
+  content: "—";
+  color: var(--accent-color);
+  font-size: 2rem;
+  display: block;
+  text-align: center;
+  margin: 30px 0;
+  letter-spacing: 10px;
+}
+
+.template-modern-minimal input,
+.template-modern-minimal textarea,
+.template-modern-minimal select {
+  border-radius: 0;
+  border: 1px solid #e0e0e0;
+  font-weight: 300;
+}
+
+.template-modern-minimal input:focus,
+.template-modern-minimal textarea:focus,
+.template-modern-minimal select:focus {
+  border-color: var(--primary-color);
+  box-shadow: none;
+}
