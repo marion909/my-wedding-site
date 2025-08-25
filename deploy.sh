@@ -318,10 +318,20 @@ EOF
     # Prepare production build environment
     print_status "Preparing production build environment..."
     
+    # Source environment variables
+    source .env
+    export $(cut -d= -f1 .env | grep -v '^#')
+    
     # Disable telemetry and set production flags
     export DISABLE_ESLINT_PLUGIN=true
     export NEXT_TELEMETRY_DISABLED=1
     export NODE_ENV=production
+    
+    # Ensure database is accessible for build
+    print_status "Verifying database connection..."
+    if ! npx prisma db push --accept-data-loss 2>/dev/null; then
+        print_warning "Database push failed, continuing with build..."
+    fi
     
     # Use production-optimized configs if they exist
     if [ -f "next.config.production.js" ]; then

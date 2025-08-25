@@ -19,6 +19,14 @@ interface SEOMetadata {
 }
 
 export function generateSEOMetadata(data: SEOMetadata): Metadata {
+  if (!data) {
+    console.error('generateSEOMetadata called with undefined data')
+    return {
+      title: 'My Wedding Site',
+      description: 'Erstelle deine perfekte Hochzeitswebsite',
+    }
+  }
+
   return {
     title: data.title,
     description: data.description,
@@ -84,11 +92,19 @@ export function generateWeddingSEO(wedding: {
   story?: string
   photos?: { filename: string }[]
 }) {
-  const weddingDate = wedding.date.toLocaleDateString('de-DE', {
+  if (!wedding) {
+    console.error('generateWeddingSEO called with undefined wedding data')
+    return {
+      title: 'Hochzeit - My Wedding Site',
+      description: 'Eine wunderschöne Hochzeitsfeier',
+    }
+  }
+
+  const weddingDate = wedding.date?.toLocaleDateString('de-DE', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  })
+  }) || 'Hochzeitsdatum'
   
   const title = `${wedding.brideName} & ${wedding.groomName} - Hochzeit am ${weddingDate}`
   const description = wedding.story 
@@ -105,8 +121,8 @@ export function generateWeddingSEO(wedding: {
     weddingDate.split(' ')[2] // Jahr
   ]
   
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://my-wedding-site.com'
-  const canonical = `${baseUrl}/${wedding.slug}`
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const canonical = `${baseUrl}/${wedding.slug || ''}`
   
   // Use first photo as OG image if available
   const ogImage = wedding.photos?.[0]
@@ -134,6 +150,8 @@ export function generateWeddingSEO(wedding: {
 
 // Landing page SEO
 export function generateLandingSEO() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  
   return generateSEOMetadata({
     title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
     description: 'Erstelle in wenigen Minuten deine eigene Hochzeitswebsite. Schöne Templates, RSVP-Verwaltung und Fotogalerien - alles kostenlos!',
@@ -146,12 +164,12 @@ export function generateLandingSEO() {
       'Hochzeitsplaner',
       'kostenlos'
     ],
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://my-wedding-site.com',
+    canonical: baseUrl,
     openGraph: {
       title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
       description: 'Schöne Hochzeitswebsites in Minuten erstellen. Templates, RSVP & mehr!',
-      url: process.env.NEXT_PUBLIC_BASE_URL || 'https://my-wedding-site.com',
-      image: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://my-wedding-site.com'}/og-landing.jpg`,
+      url: baseUrl,
+      image: `${baseUrl}/og-landing.jpg`,
     },
   })
 }
