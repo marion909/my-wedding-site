@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { generateLandingSEO } from "@/lib/seo";
 import { Metadata } from "next";
 
-export const metadata: Metadata = generateLandingSEO()
+export const metadata: Metadata = {
+  title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
+  description: 'Erstelle in wenigen Minuten deine eigene Hochzeitswebsite. Schöne Templates, RSVP-Verwaltung und Fotogalerien - alles kostenlos!',
+}
 
 export default function Home() {
   return (

@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import RSVPForm from '@/components/RSVPForm'
 import PhotoGallery from '@/components/PhotoGallery'
-import { generateWeddingSEO } from '@/lib/seo'
 import { shouldShowAds } from '@/lib/subscription'
 import { WeddingHeaderAd, WeddingFooterAd, WeddingSectionAd } from '@/components/SmartAd'
 import { Metadata } from 'next'
@@ -40,16 +39,18 @@ export async function generateMetadata({ params }: WeddingPageProps): Promise<Me
   }
 
   const weddingDate = new Date(wedding.weddingDate)
-  
-  return generateWeddingSEO({
-    brideName: wedding.brideName,
-    groomName: wedding.groomName,
-    date: weddingDate,
-    location: wedding.location,
-    slug: wedding.slug,
-    story: wedding.story || undefined,
-    photos: wedding.photos,
+  const dateString = weddingDate.toLocaleDateString('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
+  
+  return {
+    title: `${wedding.brideName} & ${wedding.groomName} - ${dateString}`,
+    description: wedding.story 
+      ? `${wedding.story.slice(0, 150)}...`
+      : `Herzlich willkommen zur Hochzeit von ${wedding.brideName} und ${wedding.groomName} am ${dateString} in ${wedding.location}.`,
+  }
 }
 
 export default async function WeddingPage({ params }: WeddingPageProps) {
