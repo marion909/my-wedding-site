@@ -842,16 +842,53 @@ EOF
 setup_ssl() {
     print_header "Setting up SSL Certificate"
     
+    # Validate domain is set
+    if [ -z "$DOMAIN" ]; then
+        print_error "Domain is not set. Cannot setup SSL certificate."
+        print_warning "Skipping SSL setup. You can set it up manually later."
+        return 1
+    fi
+    
     # Install certbot
     apt install -y certbot python3-certbot-nginx
     
-    # Get certificate
-    certbot --nginx -d ${DOMAIN} -d www.${DOMAIN} --non-interactive --agree-tos --email ${EMAIL}
+    # Check if domain is accessible before getting certificate
+    print_status "Checking domain accessibility..."
+    if ! nslookup "$DOMAIN" >/dev/null 2>&1; then
+        print_warning "Domain $DOMAIN is not resolvable via DNS"
+        print_warning "Make sure your domain's A record points to this server's IP"
+        print_warning "Skipping SSL setup. You can run 'certbot --nginx -d $DOMAIN' manually later"
+        return 1
+    fi
     
-    # Setup auto-renewal
-    systemctl enable certbot.timer
+    # Test HTTP connectivity first
+    print_status "Testing HTTP connectivity to domain..."
+    if ! curl -I "http://$DOMAIN" --connect-timeout 10 >/dev/null 2>&1; then
+        print_warning "Cannot reach http://$DOMAIN - this is normal for new domains"
+        print_status "Attempting SSL certificate anyway..."
+    fi
     
-    print_status "SSL certificate installed and auto-renewal configured"
+    # Get certificate with better error handling
+    print_status "Requesting SSL certificate for $DOMAIN..."
+    if certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" --non-interactive --agree-tos --email "${EMAIL}" --redirect; then
+        print_status "SSL certificate installed successfully"
+        
+        # Setup auto-renewal
+        systemctl enable certbot.timer
+        print_status "SSL auto-renewal configured"
+    else
+        print_warning "Failed to obtain SSL certificate"
+        print_warning "This could be due to:"
+        print_warning "1. Domain DNS not pointing to this server"
+        print_warning "2. Domain not yet propagated"
+        print_warning "3. Rate limiting from Let's Encrypt"
+        print_warning ""
+        print_warning "You can try again later with:"
+        print_warning "  certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}"
+        print_warning ""
+        print_warning "Your site will still work with HTTP for now"
+        return 1
+    fi
 }
 
 # Function to setup monitoring
@@ -959,9 +996,18 @@ show_completion_info() {
         echo -e "${YELLOW}Your wedding site is running in DEVELOPMENT mode!${NC}"
         echo -e "${YELLOW}This means the build failed, but the site is still accessible.${NC}"
         echo
-        echo "Website URL: https://${DOMAIN}"
-        echo "Admin Panel: https://${DOMAIN}/dashboard"
+        
+        # Check if SSL is working for development mode
+        if curl -I "https://${DOMAIN}" --connect-timeout 5 >/dev/null 2>&1; then
+            echo "🔒 Website URL (HTTPS): https://${DOMAIN}"
+            echo "🔒 Admin Panel (HTTPS): https://${DOMAIN}/dashboard"
+        else
+            echo "🌐 Website URL (HTTP): http://${DOMAIN}"
+            echo "🌐 Admin Panel (HTTP): http://${DOMAIN}/dashboard"
+            echo -e "${YELLOW}⚠️  HTTPS not available - SSL setup may have failed${NC}"
+        fi
         echo
+        
         echo -e "${RED}IMPORTANT WARNINGS:${NC}"
         echo "⚠️  Running in development mode - slower performance"
         echo "⚠️  Hot reloading enabled - may cause memory issues"
@@ -979,8 +1025,16 @@ show_completion_info() {
         
         echo -e "${GREEN}Your wedding site platform is now live!${NC}"
         echo
-        echo "Website URL: https://${DOMAIN}"
-        echo "Admin Panel: https://${DOMAIN}/dashboard"
+        
+        # Check if SSL is working for production mode
+        if curl -I "https://${DOMAIN}" --connect-timeout 5 >/dev/null 2>&1; then
+            echo "🔒 Website URL (HTTPS): https://${DOMAIN}"
+            echo "🔒 Admin Panel (HTTPS): https://${DOMAIN}/dashboard"
+        else
+            echo "🌐 Website URL (HTTP): http://${DOMAIN}"
+            echo "🌐 Admin Panel (HTTP): http://${DOMAIN}/dashboard"
+            echo -e "${YELLOW}⚠️  HTTPS not available - SSL setup may have failed${NC}"
+        fi
         echo
     fi
     
@@ -990,6 +1044,11 @@ show_completion_info() {
     echo "3. Set up email SMTP credentials"
     echo "4. Test the complete user flow"
     echo "5. Set up domain DNS if not done already"
+    
+    # Add SSL setup instructions if HTTPS is not working
+    if ! curl -I "https://${DOMAIN}" --connect-timeout 5 >/dev/null 2>&1; then
+        echo "6. Setup SSL certificate manually: certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}"
+    fi
     echo
     echo -e "${BLUE}Useful Commands:${NC}"
     echo "View logs: sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 logs ${APP_NAME}"
@@ -1024,7 +1083,13 @@ main() {
     deploy_application
     setup_pm2
     setup_nginx
-    setup_ssl
+    
+    # Try SSL setup, but don't fail if it doesn't work
+    if ! setup_ssl; then
+        print_warning "SSL setup failed, but deployment will continue"
+        print_warning "Your site is accessible via HTTP"
+    fi
+    
     setup_monitoring
     setup_backups
     run_tests
@@ -1045,6 +1110,56 @@ case "${1:-}" in
     --config-only)
         collect_config
         exit 0
+        ;;
+    --no-ssl)
+        print_header "My Wedding Site - Production Deployment (No SSL)"
+        
+        # Initialize deployment mode variables
+        BUILD_SUCCESS=false
+        DEVELOPMENT_MODE=false
+        
+        check_requirements
+        collect_config
+        update_system
+        install_nodejs
+        install_postgresql
+        install_nginx
+        setup_firewall
+        deploy_application
+        setup_pm2
+        setup_nginx
+        setup_monitoring
+        setup_backups
+        run_tests
+        show_completion_info
+        ;;
+    --no-firewall)
+        print_header "My Wedding Site - Production Deployment (No Firewall)"
+        
+        # Initialize deployment mode variables
+        BUILD_SUCCESS=false
+        DEVELOPMENT_MODE=false
+        
+        check_requirements
+        collect_config
+        update_system
+        install_nodejs
+        install_postgresql
+        install_nginx
+        deploy_application
+        setup_pm2
+        setup_nginx
+        
+        # Try SSL setup, but don't fail if it doesn't work
+        if ! setup_ssl; then
+            print_warning "SSL setup failed, but deployment will continue"
+            print_warning "Your site is accessible via HTTP"
+        fi
+        
+        setup_monitoring
+        setup_backups
+        run_tests
+        show_completion_info
         ;;
     *)
         main "$@"
