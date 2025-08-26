@@ -508,7 +508,40 @@ NEXT_PUBLIC_APP_NAME="My Wedding Site"
 NODE_ENV="production"
 EOF
 
-    # Create symlink for Next.js to use
+    # Create development environment file as fallback
+    cat > .env.development <<EOF
+# Database
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}"
+
+# NextAuth
+NEXTAUTH_SECRET="$(generate_password)"
+NEXTAUTH_URL="https://${DOMAIN}"
+
+# Email Configuration
+EMAIL_FROM="noreply@${DOMAIN}"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="${EMAIL}"
+SMTP_PASSWORD="your-app-password-here"
+
+# Stripe Configuration (Test keys for development)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_PRICE_ID_PREMIUM="price_..."
+
+# Google Ads Configuration (Add your real publisher ID here)
+GOOGLE_ADS_CLIENT_ID="ca-pub-..."
+
+# App Configuration
+NEXT_PUBLIC_BASE_URL="https://${DOMAIN}"
+NEXT_PUBLIC_APP_NAME="My Wedding Site"
+
+# Development Settings
+NODE_ENV="development"
+EOF
+
+    # Create symlink for Next.js to use (will be updated based on mode)
     ln -sf .env.production .env
     
     # Setup database
@@ -566,6 +599,7 @@ EOF
     print_status "Building application..."
     
     BUILD_SUCCESS=false
+    DEVELOPMENT_MODE=false
     
     # Strategy 1: Try normal build
     if npm run build 2>/dev/null; then
@@ -598,16 +632,11 @@ EOF
             BUILD_SUCCESS=true
             print_warning "Build succeeded with relaxed settings"
         else
-            print_error "Build failed completely"
-            print_error "Build logs:"
-            npm run build
-            exit 1
+            print_warning "Build failed completely, will run in development mode"
+            print_status "Continuing with development deployment..."
+            BUILD_SUCCESS=false
+            DEVELOPMENT_MODE=true
         fi
-    fi
-    
-    if [ "$BUILD_SUCCESS" = false ]; then
-        print_error "Failed to build application after multiple attempts"
-        exit 1
     fi
     
     # Set permissions
@@ -628,8 +657,42 @@ setup_pm2() {
     
     cd $APP_DIR
     
-    # Create PM2 ecosystem file
-    cat > ecosystem.config.js <<EOF
+    # Determine PM2 configuration based on build success
+    if [ "$DEVELOPMENT_MODE" = true ]; then
+        print_warning "Starting application in development mode"
+        
+        # Create PM2 ecosystem file for development
+        cat > ecosystem.config.js <<EOF
+module.exports = {
+  apps: [{
+    name: '${APP_NAME}',
+    script: 'npm',
+    args: 'run dev',
+    cwd: '${APP_DIR}',
+    instances: 1,
+    exec_mode: 'fork',
+    env: {
+      NODE_ENV: 'development',
+      PORT: 3000
+    },
+    error_file: '/var/log/pm2/${APP_NAME}-error.log',
+    out_file: '/var/log/pm2/${APP_NAME}-out.log',
+    log_file: '/var/log/pm2/${APP_NAME}.log',
+    time: true,
+    max_memory_restart: '2G',
+    node_args: '--max-old-space-size=2048',
+    watch: false,
+    ignore_watch: ['node_modules', '.next', 'public/uploads'],
+    restart_delay: 5000
+  }]
+};
+EOF
+        print_status "PM2 configured for development mode"
+    else
+        print_status "Starting application in production mode"
+        
+        # Create PM2 ecosystem file for production
+        cat > ecosystem.config.js <<EOF
 module.exports = {
   apps: [{
     name: '${APP_NAME}',
@@ -651,10 +714,21 @@ module.exports = {
   }]
 };
 EOF
+        print_status "PM2 configured for production mode"
+    fi
     
     # Create PM2 log directory
     mkdir -p /var/log/pm2
     chown -R www-data:www-data /var/log/pm2
+    
+    # Update environment file symlink based on mode
+    if [ "$DEVELOPMENT_MODE" = true ]; then
+        print_status "Switching to development environment configuration"
+        ln -sf .env.development .env
+    else
+        print_status "Using production environment configuration"
+        ln -sf .env.production .env
+    fi
     
     # Start application with PM2
     sudo -u www-data pm2 start ecosystem.config.js
@@ -663,7 +737,12 @@ EOF
     # Setup PM2 startup
     pm2 startup systemd -u www-data --hp /var/www
     
-    print_status "PM2 configured and application started"
+    if [ "$DEVELOPMENT_MODE" = true ]; then
+        print_status "PM2 configured and application started in DEVELOPMENT mode"
+        print_warning "Remember: This is running in development mode due to build failure"
+    else
+        print_status "PM2 configured and application started in PRODUCTION mode"
+    fi
 }
 
 # Function to configure nginx
@@ -864,14 +943,38 @@ run_tests() {
 
 # Function to display final information
 show_completion_info() {
-    print_header "Deployment Completed Successfully! 🎉"
+    if [ "$DEVELOPMENT_MODE" = true ]; then
+        print_header "Development Deployment Completed! 🚧"
+        
+        echo -e "${YELLOW}Your wedding site is running in DEVELOPMENT mode!${NC}"
+        echo -e "${YELLOW}This means the build failed, but the site is still accessible.${NC}"
+        echo
+        echo "Website URL: https://${DOMAIN}"
+        echo "Admin Panel: https://${DOMAIN}/dashboard"
+        echo
+        echo -e "${RED}IMPORTANT WARNINGS:${NC}"
+        echo "⚠️  Running in development mode - slower performance"
+        echo "⚠️  Hot reloading enabled - may cause memory issues"
+        echo "⚠️  Build errors need to be fixed for production"
+        echo "⚠️  Check PM2 logs regularly for stability"
+        echo
+        echo -e "${YELLOW}Next Steps to Fix:${NC}"
+        echo "1. Check build errors: sudo -u www-data pm2 logs ${APP_NAME}"
+        echo "2. Fix TypeScript/ESLint issues in the code"
+        echo "3. Run 'npm run build' locally to test"
+        echo "4. Redeploy with working build for production mode"
+        echo
+    else
+        print_header "Production Deployment Completed Successfully! 🎉"
+        
+        echo -e "${GREEN}Your wedding site platform is now live!${NC}"
+        echo
+        echo "Website URL: https://${DOMAIN}"
+        echo "Admin Panel: https://${DOMAIN}/dashboard"
+        echo
+    fi
     
-    echo -e "${GREEN}Your wedding site platform is now live!${NC}"
-    echo
-    echo "Website URL: https://${DOMAIN}"
-    echo "Admin Panel: https://${DOMAIN}/dashboard"
-    echo
-    echo -e "${YELLOW}Important Next Steps:${NC}"
+    echo -e "${YELLOW}Important Configuration:${NC}"
     echo "1. Configure real Stripe API keys in: ${APP_DIR}/.env.production"
     echo "2. Configure Google AdSense publisher ID"
     echo "3. Set up email SMTP credentials"
@@ -883,6 +986,11 @@ show_completion_info() {
     echo "Restart app: sudo -u www-data pm2 restart ${APP_NAME}"
     echo "View nginx logs: sudo tail -f /var/log/nginx/error.log"
     echo "Manual backup: sudo /usr/local/bin/backup-wedding-db.sh"
+    
+    if [ "$DEVELOPMENT_MODE" = true ]; then
+        echo "Switch to production: Fix build, then run 'sudo -u www-data pm2 restart ${APP_NAME} --update-env'"
+    fi
+    
     echo
     echo -e "${GREEN}Happy Wedding Planning! 💍✨${NC}"
 }
@@ -890,6 +998,10 @@ show_completion_info() {
 # Main deployment function
 main() {
     print_header "My Wedding Site - Production Deployment"
+    
+    # Initialize deployment mode variables
+    BUILD_SUCCESS=false
+    DEVELOPMENT_MODE=false
     
     check_requirements
     collect_config
