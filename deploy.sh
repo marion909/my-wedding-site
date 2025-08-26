@@ -320,6 +320,9 @@ NEXT_PUBLIC_APP_NAME="My Wedding Site"
 # Production Settings
 NODE_ENV="production"
 EOF
+
+    # Create symlink for Next.js to use
+    ln -sf .env.production .env
     
     # Setup database
     print_status "Setting up database..."
@@ -329,9 +332,16 @@ EOF
     # Prepare production build environment
     print_status "Preparing production build environment..."
     
-    # Source environment variables
-    source .env
-    export $(cut -d= -f1 .env | grep -v '^#')
+    # Source environment variables from production file
+    if [ -f ".env.production" ]; then
+        source .env.production
+        export $(cut -d= -f1 .env.production | grep -v '^#')
+    elif [ -f ".env" ]; then
+        source .env
+        export $(cut -d= -f1 .env | grep -v '^#')
+    else
+        print_warning "No environment file found, using defaults..."
+    fi
     
     # Disable telemetry and set production flags
     export DISABLE_ESLINT_PLUGIN=true
