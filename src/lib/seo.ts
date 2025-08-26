@@ -18,9 +18,9 @@ interface SEOMetadata {
   }
 }
 
-export function generateSEOMetadata(data: SEOMetadata): Metadata {
-  if (!data) {
-    console.error('generateSEOMetadata called with undefined data')
+export function generateSEOMetadata(seoData: SEOMetadata): Metadata {
+  if (!seoData) {
+    console.error('generateSEOMetadata called with undefined seoData')
     return {
       title: 'My Wedding Site',
       description: 'Erstelle deine perfekte Hochzeitswebsite',
@@ -28,25 +28,25 @@ export function generateSEOMetadata(data: SEOMetadata): Metadata {
   }
 
   return {
-    title: data.title,
-    description: data.description,
-    keywords: data.keywords?.join(', '),
+    title: seoData.title,
+    description: seoData.description,
+    keywords: seoData.keywords?.join(', '),
     alternates: {
-      canonical: data.canonical,
+      canonical: seoData.canonical,
     },
     
     // Open Graph (Facebook, LinkedIn, etc.)
     openGraph: {
-      title: data.openGraph?.title || data.title,
-      description: data.openGraph?.description || data.description,
-      url: data.openGraph?.url || data.canonical,
+      title: seoData.openGraph?.title || seoData.title,
+      description: seoData.openGraph?.description || seoData.description,
+      url: seoData.openGraph?.url || seoData.canonical,
       siteName: 'My Wedding Site',
-      images: data.openGraph?.image ? [
+      images: seoData.openGraph?.image ? [
         {
-          url: data.openGraph.image,
+          url: seoData.openGraph.image,
           width: 1200,
           height: 630,
-          alt: data.openGraph.title
+          alt: seoData.openGraph.title
         }
       ] : [],
       locale: 'de_DE',
@@ -56,9 +56,9 @@ export function generateSEOMetadata(data: SEOMetadata): Metadata {
     // Twitter Cards
     twitter: {
       card: 'summary_large_image',
-      title: data.twitter?.title || data.title,
-      description: data.twitter?.description || data.description,
-      images: data.twitter?.image ? [data.twitter.image] : [],
+      title: seoData.twitter?.title || seoData.title,
+      description: seoData.twitter?.description || seoData.description,
+      images: seoData.twitter?.image ? [seoData.twitter.image] : [],
       creator: '@myweddingsite',
     },
     
