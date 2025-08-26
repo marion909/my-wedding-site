@@ -721,6 +721,14 @@ EOF
     mkdir -p /var/log/pm2
     chown -R www-data:www-data /var/log/pm2
     
+    # Setup PM2 home directory for www-data user
+    print_status "Setting up PM2 home directory..."
+    PM2_HOME="/home/www-data/.pm2"
+    mkdir -p /home/www-data
+    mkdir -p $PM2_HOME
+    chown -R www-data:www-data /home/www-data
+    chmod 755 /home/www-data
+    
     # Update environment file symlink based on mode
     if [ "$DEVELOPMENT_MODE" = true ]; then
         print_status "Switching to development environment configuration"
@@ -730,12 +738,14 @@ EOF
         ln -sf .env.production .env
     fi
     
-    # Start application with PM2
-    sudo -u www-data pm2 start ecosystem.config.js
-    sudo -u www-data pm2 save
+    # Initialize PM2 for www-data user
+    print_status "Initializing PM2 for www-data user..."
+    sudo -u www-data -H PM2_HOME=$PM2_HOME pm2 kill 2>/dev/null || true
+    sudo -u www-data -H PM2_HOME=$PM2_HOME pm2 start ecosystem.config.js
+    sudo -u www-data -H PM2_HOME=$PM2_HOME pm2 save
     
-    # Setup PM2 startup
-    pm2 startup systemd -u www-data --hp /var/www
+    # Setup PM2 startup with correct home directory
+    PM2_HOME=$PM2_HOME pm2 startup systemd -u www-data --hp /home/www-data
     
     if [ "$DEVELOPMENT_MODE" = true ]; then
         print_status "PM2 configured and application started in DEVELOPMENT mode"
@@ -858,7 +868,7 @@ setup_monitoring() {
     notifempty
     create 644 www-data www-data
     postrotate
-        sudo -u www-data pm2 reloadLogs
+        sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 reloadLogs
     endscript
 }
 EOF
@@ -868,7 +878,7 @@ EOF
 #!/bin/bash
 if ! curl -f http://localhost:3000/health >/dev/null 2>&1; then
     echo "\$(date): Application health check failed, restarting..." >> /var/log/health-check.log
-    sudo -u www-data pm2 restart ${APP_NAME}
+    sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 restart ${APP_NAME}
 fi
 EOF
     
@@ -938,7 +948,7 @@ run_tests() {
     fi
     
     print_status "Testing PM2 status..."
-    sudo -u www-data pm2 status
+    sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 status
 }
 
 # Function to display final information
@@ -982,13 +992,14 @@ show_completion_info() {
     echo "5. Set up domain DNS if not done already"
     echo
     echo -e "${BLUE}Useful Commands:${NC}"
-    echo "View logs: sudo -u www-data pm2 logs ${APP_NAME}"
-    echo "Restart app: sudo -u www-data pm2 restart ${APP_NAME}"
+    echo "View logs: sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 logs ${APP_NAME}"
+    echo "Restart app: sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 restart ${APP_NAME}"
+    echo "PM2 status: sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 status"
     echo "View nginx logs: sudo tail -f /var/log/nginx/error.log"
     echo "Manual backup: sudo /usr/local/bin/backup-wedding-db.sh"
     
     if [ "$DEVELOPMENT_MODE" = true ]; then
-        echo "Switch to production: Fix build, then run 'sudo -u www-data pm2 restart ${APP_NAME} --update-env'"
+        echo "Switch to production: Fix build, then run 'sudo -u www-data -H PM2_HOME=/home/www-data/.pm2 pm2 restart ${APP_NAME} --update-env'"
     fi
     
     echo
