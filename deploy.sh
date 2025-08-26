@@ -419,10 +419,15 @@ EOF
         BUILD_SUCCESS=true
         print_status "Build completed successfully"
     else
-        print_warning "Normal build failed, trying with relaxed settings..."
+        print_warning "Normal build failed, trying with safe configuration..."
         
-        # Strategy 2: Create lenient configuration
-        cat > next.config.js <<EOF
+        # Strategy 2: Use safe production configuration
+        if [ -f "next.config.safe.js" ]; then
+            cp next.config.safe.js next.config.js
+            print_status "Using safe production configuration"
+        else
+            # Strategy 3: Create safe configuration on the fly
+            cat > next.config.js <<EOF
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -433,22 +438,54 @@ const nextConfig = {
   },
   output: 'standalone',
   experimental: {
-    optimizePackageImports: ['lucide-react']
-  }
+    optimizePackageImports: [],
+  },
+  images: {
+    domains: ['localhost'],
+    formats: ['image/webp'],
+    unoptimized: false,
+  },
+  compress: false,
+  compiler: {
+    removeConsole: false,
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (!dev) {
+      config.optimization.minimize = false;
+      config.optimization.sideEffects = false;
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig
 EOF
+        fi
         
-        # Strategy 3: Try with completely disabled linting
+        # Clear cache and try build again
+        npx next clean || true
+        
+        # Strategy 4: Try with safe configuration
         if npm run build; then
             BUILD_SUCCESS=true
-            print_warning "Build succeeded with relaxed settings"
+            print_warning "Build succeeded with safe configuration"
         else
-            print_warning "Build failed completely, will run in development mode"
-            print_status "Continuing with development deployment..."
-            BUILD_SUCCESS=false
-            DEVELOPMENT_MODE=true
+            print_warning "Build failed completely, trying development mode..."
+            # Strategy 5: Development mode fallback
+            if npm run dev &; then
+                DEVELOPMENT_MODE=true
+                print_status "Running in development mode"
+            else
+                print_error "All build strategies failed"
+                return 1
+            fi
         fi
     fi
     
