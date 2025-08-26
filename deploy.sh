@@ -260,7 +260,194 @@ deploy_application() {
         chmod +x fix-build.sh
         bash fix-build.sh
     else
-        print_warning "fix-build.sh not found, applying inline fixes..."
+        print_warning "fix-build.sh not found, applying critical runtime fixes..."
+        
+        # Critical SEO fix to prevent "data is not defined" error
+        print_status "Applying critical SEO runtime fixes..."
+        
+        # Backup and fix SEO file
+        if [ -f "src/lib/seo.ts" ]; then
+            cp src/lib/seo.ts src/lib/seo.ts.backup
+            
+            cat > src/lib/seo.ts << 'EOF'
+import { Metadata } from 'next'
+
+interface SEOMetadata {
+  title: string
+  description: string
+  keywords?: string[]
+  canonical?: string
+  openGraph?: {
+    title: string
+    description: string
+    image?: string
+    url?: string
+  }
+  twitter?: {
+    title: string
+    description: string
+    image?: string
+  }
+}
+
+export function generateSEOMetadata(seoData: SEOMetadata): Metadata {
+  if (!seoData) {
+    return {
+      title: 'My Wedding Site',
+      description: 'Erstelle deine perfekte Hochzeitswebsite',
+    }
+  }
+
+  try {
+    const result: Metadata = {
+      title: seoData.title || 'My Wedding Site',
+      description: seoData.description || 'Erstelle deine perfekte Hochzeitswebsite',
+    }
+
+    if (seoData.keywords?.length) {
+      result.keywords = seoData.keywords.join(', ')
+    }
+
+    if (seoData.canonical) {
+      result.alternates = { canonical: seoData.canonical }
+    }
+
+    if (seoData.openGraph) {
+      result.openGraph = {
+        title: seoData.openGraph.title || seoData.title || 'My Wedding Site',
+        description: seoData.openGraph.description || seoData.description || 'Erstelle deine perfekte Hochzeitswebsite',
+        url: seoData.openGraph.url || seoData.canonical,
+        siteName: 'My Wedding Site',
+        locale: 'de_DE',
+        type: 'website',
+        images: seoData.openGraph.image ? [{
+          url: seoData.openGraph.image,
+          width: 1200,
+          height: 630,
+          alt: seoData.openGraph.title || seoData.title || 'My Wedding Site'
+        }] : []
+      }
+    }
+
+    if (seoData.twitter) {
+      result.twitter = {
+        card: 'summary_large_image',
+        title: seoData.twitter.title || seoData.title || 'My Wedding Site',
+        description: seoData.twitter.description || seoData.description || 'Erstelle deine perfekte Hochzeitswebsite',
+        images: seoData.twitter.image ? [seoData.twitter.image] : []
+      }
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error in generateSEOMetadata:', error)
+    return {
+      title: 'My Wedding Site',
+      description: 'Erstelle deine perfekte Hochzeitswebsite',
+    }
+  }
+}
+
+export function generateWeddingSEO(weddingData: {
+  brideName: string
+  groomName: string
+  date: Date
+  location: string
+  slug: string
+  story?: string
+  photos?: { filename: string }[]
+}): Metadata {
+  if (!weddingData) {
+    return {
+      title: 'Hochzeit - My Wedding Site',
+      description: 'Eine wunderschöne Hochzeitsfeier',
+    }
+  }
+
+  try {
+    const dateString = weddingData.date?.toLocaleDateString?.('de-DE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) || 'Hochzeitsdatum'
+    
+    const titleText = `${weddingData.brideName || 'Braut'} & ${weddingData.groomName || 'Bräutigam'} - ${dateString}`
+    const descriptionText = weddingData.story 
+      ? `${weddingData.story.slice(0, 150)}...`
+      : `Herzlich willkommen zur Hochzeit von ${weddingData.brideName || 'Braut'} und ${weddingData.groomName || 'Bräutigam'} am ${dateString} in ${weddingData.location || 'unserem schönen Ort'}.`
+    
+    const keywordsList = [
+      'Hochzeit',
+      weddingData.brideName || 'Braut',
+      weddingData.groomName || 'Bräutigam',
+      weddingData.location || 'Hochzeitsort',
+      'RSVP'
+    ].filter(Boolean)
+    
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const canonicalUrl = `${baseUrl}/${weddingData.slug || ''}`
+    const imageUrl = weddingData.photos?.[0]
+      ? `${baseUrl}/uploads/${weddingData.photos[0].filename}`
+      : `${baseUrl}/og-default.jpg`
+    
+    return generateSEOMetadata({
+      title: titleText,
+      description: descriptionText,
+      keywords: keywordsList,
+      canonical: canonicalUrl,
+      openGraph: {
+        title: titleText,
+        description: descriptionText,
+        url: canonicalUrl,
+        image: imageUrl,
+      },
+      twitter: {
+        title: titleText,
+        description: descriptionText,
+        image: imageUrl,
+      },
+    })
+  } catch (error) {
+    console.error('Error in generateWeddingSEO:', error)
+    return {
+      title: 'Hochzeit - My Wedding Site',
+      description: 'Eine wunderschöne Hochzeitsfeier',
+    }
+  }
+}
+
+export function generateLandingSEO(): Metadata {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    
+    return generateSEOMetadata({
+      title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
+      description: 'Erstelle in wenigen Minuten deine eigene Hochzeitswebsite. Schöne Templates, RSVP-Verwaltung und Fotogalerien - alles kostenlos!',
+      keywords: [
+        'Hochzeitswebsite erstellen',
+        'Hochzeit Website',
+        'RSVP System',
+        'Wedding Website'
+      ],
+      canonical: baseUrl,
+      openGraph: {
+        title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
+        description: 'Schöne Hochzeitswebsites in Minuten erstellen.',
+        url: baseUrl,
+        image: `${baseUrl}/og-landing.jpg`,
+      },
+    })
+  } catch (error) {
+    console.error('Error in generateLandingSEO:', error)
+    return {
+      title: 'My Wedding Site - Erstelle deine perfekte Hochzeitswebsite',
+      description: 'Erstelle in wenigen Minuten deine eigene Hochzeitswebsite.',
+    }
+  }
+}
+EOF
+            print_status "SEO functions fixed with proper variable scoping"
+        fi
         
         # Inline build fixes
         export NODE_ENV=production
