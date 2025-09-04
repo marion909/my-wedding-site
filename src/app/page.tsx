@@ -309,6 +309,9 @@ export default function Home() {
                 <Link href="/legal/imprint" className="block text-gray-300 hover:text-white transition-colors">
                   Impressum
                 </Link>
+                <Link href="/network-manager" className="block text-gray-300 hover:text-white transition-colors">
+                  Network Manager Demo
+                </Link>
                 <a 
                   href="mailto:support@my-wedding-site.com" 
                   className="block text-gray-300 hover:text-white transition-colors"
