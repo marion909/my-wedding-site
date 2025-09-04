@@ -4,6 +4,26 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 
+interface RSVPData {
+  id: string
+  guestName: string
+  email: string
+  attending: boolean
+  guestCount: number
+  message: string | null
+  createdAt: string
+}
+
+interface WeddingData {
+  id: string
+  brideName: string
+  groomName: string
+  slug: string
+  _count: {
+    rsvps: number
+  }
+}
+
 async function getRSVPs(userId: string, weddingId: string) {
   const rsvps = await prisma.rSVP.findMany({
     where: {
@@ -67,9 +87,9 @@ export default async function RSVPPage({
   
   const stats = {
     total: rsvps.length,
-    attending: rsvps.filter((r) => r.attending).length,
-    notAttending: rsvps.filter((r) => !r.attending).length,
-    totalGuests: rsvps.filter((r) => r.attending).reduce((sum: number, r) => sum + r.guestCount, 0)
+    attending: rsvps.filter((r: RSVPData) => r.attending).length,
+    notAttending: rsvps.filter((r: RSVPData) => !r.attending).length,
+    totalGuests: rsvps.filter((r: RSVPData) => r.attending).reduce((sum: number, r: RSVPData) => sum + r.guestCount, 0)
   }
 
   return (
@@ -108,7 +128,7 @@ export default async function RSVPPage({
               }}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
             >
-              {weddings.map((wedding) => (
+              {weddings.map((wedding: WeddingData) => (
                 <option key={wedding.id} value={wedding.id}>
                   {wedding.brideName} & {wedding.groomName}
                 </option>
@@ -182,7 +202,7 @@ export default async function RSVPPage({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {rsvps.map((rsvp) => (
+                      {rsvps.map((rsvp: RSVPData) => (
                         <tr key={rsvp.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">

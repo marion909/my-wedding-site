@@ -14,6 +14,13 @@ interface SectionConfig {
   required: boolean
 }
 
+interface PhotoData {
+  id: string
+  filename: string
+  caption: string | null
+  sortOrder: number
+}
+
 interface WeddingPageProps {
   params: Promise<{
     slug: string
@@ -271,7 +278,7 @@ export default async function WeddingPage({ params }: WeddingPageProps) {
               <h2 className="section-title text-3xl font-bold text-center mb-12">
                 Unsere Fotos
               </h2>
-              <PhotoGallery photos={wedding.photos.map(photo => ({
+              <PhotoGallery photos={wedding.photos.map((photo: PhotoData) => ({
                 ...photo,
                 url: `/uploads/${photo.filename}`,
                 caption: photo.caption || ''
