@@ -6,6 +6,13 @@ import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
 
+interface PhotoData {
+  id: string
+  filename: string
+  caption: string | null
+  sortOrder: number
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -139,7 +146,7 @@ export async function GET(request: NextRequest) {
       orderBy: { sortOrder: 'asc' }
     })
 
-    const photosWithUrls = photos.map((photo) => ({
+    const photosWithUrls = photos.map((photo: PhotoData) => ({
       id: photo.id,
       filename: photo.filename,
       caption: photo.caption,

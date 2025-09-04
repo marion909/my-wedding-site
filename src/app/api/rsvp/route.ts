@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendRSVPConfirmation, sendOwnerNotification } from '@/lib/email'
 
+interface RSVPData {
+  id: string
+  guestName: string
+  email: string
+  attending: boolean
+  guestCount: number
+  message: string | null
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { weddingId, guestName, email, attending, guestCount, message } = await request.json()
@@ -181,9 +190,9 @@ export async function GET(request: NextRequest) {
 
     const stats = {
       total: rsvps.length,
-      attending: rsvps.filter((r) => r.attending).length,
-      notAttending: rsvps.filter((r) => !r.attending).length,
-      totalGuests: rsvps.filter((r) => r.attending).reduce((sum: number, r) => sum + r.guestCount, 0)
+      attending: rsvps.filter((r: RSVPData) => r.attending).length,
+      notAttending: rsvps.filter((r: RSVPData) => !r.attending).length,
+      totalGuests: rsvps.filter((r: RSVPData) => r.attending).reduce((sum: number, r: RSVPData) => sum + r.guestCount, 0)
     }
 
     return NextResponse.json({ rsvps, stats })
